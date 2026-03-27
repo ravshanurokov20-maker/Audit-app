@@ -2,37 +2,33 @@ name: Build APK
 
 on:
   push:
-    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Use Python
-        uses: actions/setup-python@v5
+      - name: Install Java
+        uses: actions/setup-java@v3
         with:
-          python-version: '3.10'
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Install system deps
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk python3-pip git
-
-      - name: Install buildozer
-        run: |
+          sudo apt install -y python3-pip build-essential git zip unzip openjdk-17-jdk
           pip install buildozer
-          pip install cython
 
-      - name: Initialize buildozer
-        run: |
-          buildozer init || true
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses || true
 
       - name: Build APK
         run: |
-          buildozer -v android debug
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
